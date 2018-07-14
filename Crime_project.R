@@ -33,10 +33,6 @@ sfpopulation <- data.table(read.csv(sf.population, sep = ',', stringsAsFactors =
 
 str(incidents2018)
 
-#cases.311 <- paste0(RawData,"/311_Cases.csv")
-#cases311 <- data.table(read.csv(cases.311, sep = ',', stringsAsFactors = F))
-#str(cases311)
-
 # check if variables from both sets are the same
 names(incidents2017) <- tolower(names(incidents2017))
 names(incidents2018) <- tolower(names(incidents2018))
@@ -55,7 +51,6 @@ incidents <- rbind(incidents2017, incidents2018)
 
 table(incidents$category)
 
-#codes <- incidents[grep('SECONDARY CODES', category),]
 
 # Take criminal cases only
 non.criminal <- c("FAMILY OFFENSES","NON-CRIMINAL","MISSING PERSON"
@@ -80,7 +75,6 @@ incidents.bydistrict[sfpopulation, on = "pddistrict", population := i.population
 
 incidents.bydistrict[, crime.per.capita := frequency/population]
 
-#tiff('Crimes per Capita in San Francisco (by District).tiff',units="in", width=6, height=4, res=300)
 ggplot(data=incidents.bydistrict, 
        aes(reorder(pddistrict, crime.per.capita),crime.per.capita)) + 
   geom_bar(stat="identity") +
@@ -88,7 +82,7 @@ ggplot(data=incidents.bydistrict,
   labs(y="Numbers of Crimes per Capita", x="Police Department District"
        , title="Crimes per Capita in San Francisco (by District)")  + 
   theme_bw()
-#dev.off()
+
 
 # How many of the incidents have been solved? In which districts? Which categories?
 incidents.crime$condition <- ifelse(grepl("UNFOUNDED", incidents.crime$resolution
@@ -113,7 +107,7 @@ crime.condition[, crime.per.capita := frequency/population]
 crime.condition$condition <- factor(crime.condition$condition
                                     , levels=c("unsolved","solved"))
 
-#tiff('Crimes per Capita in San Francisco (by District)1.tiff',units="in", width=6, height=4, res=300)
+
 ggplot(data=crime.condition, 
        aes(reorder(pddistrict, crime.per.capita),crime.per.capita, fill = condition)) + 
   geom_bar(stat="identity") +
@@ -122,7 +116,7 @@ ggplot(data=crime.condition,
        , title="Crimes per Capita in San Francisco (by District)") +
   theme_bw() +
   scale_fill_brewer(palette = "Paired") 
-#dev.off()
+
 
 ## Which categories? 
 table(incidents.crime$category)
@@ -142,7 +136,6 @@ crime.category.high <- crime.category[sum.freq > median(crime.category$sum.freq)
 
 str(crime.category)
 
-#tiff('Crimes by Category in San Francisco.tiff',units="in", width=6, height=4, res=300)
 ggplot(data=crime.category.high, 
        aes(reorder(category, frequency),frequency, fill = condition)) + 
   geom_bar(stat="identity") +
@@ -151,11 +144,11 @@ ggplot(data=crime.category.high,
        , title="Crimes by Category in San Francisco") +
   theme_bw() +
   scale_fill_brewer(palette = "Paired") 
-#dev.off()
+
 
 crime.category.high[, percentage := (frequency/sum.freq)*100]
 
-#tiff('Crimes by Condition in San Francisco.tiff',units="in", width=6, height=4, res=300)
+
 ggplot(data=crime.category.high, 
        aes(reorder(category, percentage),percentage, fill = condition)) + 
   geom_bar(stat="identity") +
@@ -164,7 +157,7 @@ ggplot(data=crime.category.high,
        , title="Crimes by Condition in San Francisco") +
   theme_bw() +
   scale_fill_brewer(palette = "Paired") 
-#dev.off()
+
 
 ## Do some criminal categories have significant differences in freq among districts?
 crime.district <- setDT(data.frame(table(incidents.crime$condition
@@ -183,23 +176,21 @@ crime.district <- crime.district[grep(paste(crimes, collapse = "|")
 crime.district[ , sum.freq := sum(frequency), by = pddistrict]
 crime.district[, percentage := (frequency/sum.freq)*100]
 
-#tiff('Particular Crimes by District in San Francisco.tiff',units="in", width=6, height=4, res=300)
 ggplot(crime.district,aes(x=pddistrict,y=percentage,fill=category))+
   geom_bar(stat="identity",position="dodge")+
   scale_fill_brewer(palette = "RdYlBu")  +
   labs(y="Percentage", x="District"
        , title="Particular Crimes by District in San Francisco") +
   theme_bw()
-#dev.off()
 
-#tiff('Particular Crimes by District in San Francisco.tiff',units="in", width=6, height=4, res=300)
+
 ggplot(crime.district,aes(x=pddistrict,y=frequency,fill=category))+
   geom_bar(stat="identity",position="dodge")+
   scale_fill_brewer(palette = "RdYlBu")  +
   labs(y="Count", x="District"
        , title="Particular Crimes by District in San Francisco") +
   theme_bw()
-#dev.off()
+
 
 # What time of the day, day of the week, month of the year has the most criminal incidents? Calendar heatmap
 
@@ -211,7 +202,6 @@ crime.summary <- crime.summary[date < "2018-05-01"]
 
 setnames(crime.summary, "V1", "crime")
 
-#tiff('Crime in San Francisco (time series).tiff',units="in", width=6, height=4, res=300)
 ggplot(crime.summary , aes(date, crime)) + 
   geom_line() + 
   scale_y_continuous() +
@@ -219,7 +209,7 @@ ggplot(crime.summary , aes(date, crime)) +
   labs(y="Count", x="Time"
        , title="Crime in San Francisco (time series)") +
   theme_bw()
-#dev.off()
+
 
 # monthly blox plot in 2017
 
@@ -230,24 +220,21 @@ crime.summary$month <- factor(format(crime.summary$date, "%b"), levels = monthOr
 crime.summary.2017 <- crime.summary[date < "2018-01-01"]
 crime.summary.2017 <- crime.summary[, mean.crime := mean(crime), by = month]
 
-
-#tiff('Average Crime in San Francisco by Month in 2017.tiff',units="in", width=6, height=4, res=300)
 ggplot(crime.summary.2017, aes(month, mean.crime, group = 1)) +
   geom_line()+
   geom_point() +
   ggtitle("Average Crime in San Francisco by Month in 2017") +
   theme_bw()
-#dev.off()
+
 
 
 crime.summary$dayofweek <- factor(crime.summary$dayofweek, levels=c("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday", "Sunday"))
 
 # day of week
-#tiff('Crime in San Francisco by Weekday.tiff',units="in", width=6, height=4, res=300)
 ggplot(crime.summary, aes(dayofweek, crime)) +
   geom_boxplot() + stat_boxplot(geom ='errorbar') + 
   ggtitle("Crime in San Francisco by Weekday")
-#dev.off()
+
 
 
 
